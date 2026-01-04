@@ -57,7 +57,7 @@ services:
     restart: unless-stopped
     volumes:
       - source: ${MCP_MARKITDOWN_WORKDIR_PATH:-${HOME}/Projects}
-        target: /workdir
+        target: ${MCP_MARKITDOWN_WORKDIR_PATH:-${HOME}/Projects}
         type: bind
 
   playwright:
