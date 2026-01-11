@@ -1,9 +1,19 @@
 name: Update guidelines submodule
 
 on:
-  repository_dispatch:
-    types:
-      - guidelines.updated
+  workflow_dispatch:
+    inputs:
+      repository:
+        description: 'Source repository (e.g., ririnto/agents-guidelines-ko)'
+        required: true
+        default: 'ririnto/agents-guidelines-ko'
+      ref:
+        description: 'Git reference (branch/tag)'
+        required: true
+        default: 'main'
+      sha:
+        description: 'Commit SHA'
+        required: true
 
 permissions:
   contents: write
@@ -23,13 +33,11 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-      - name: Validate repository_dispatch payload
+      - name: Validate workflow_dispatch inputs
         run: |-
-          echo "Event payload:" && cat "$GITHUB_EVENT_PATH"
-
-          repo=$(jq -r '.client_payload.repository // empty' "$GITHUB_EVENT_PATH")
-          sha=$(jq -r '.client_payload.sha // empty' "$GITHUB_EVENT_PATH")
-          ref=$(jq -r '.client_payload.ref // empty' "$GITHUB_EVENT_PATH")
+          repo="${{ inputs.repository }}"
+          sha="${{ inputs.sha }}"
+          ref="${{ inputs.ref }}"
 
           # Validate repository
           if [ "$repo" != "ririnto/agents-guidelines-ko" ]; then
@@ -37,12 +45,12 @@ jobs:
             exit 1
           fi
 
-          # Validate payload completeness
           if [ -z "$sha" ] || [ -z "$ref" ]; then
-            echo "::warning::Incomplete payload - sha: $sha, ref: $ref"
-          else
-            echo "::notice::Validated payload from $repo at $sha ($ref)"
+            echo "::error::Missing required inputs - sha: $sha, ref: $ref"
+            exit 1
           fi
+
+          echo "::notice::Validated inputs from $repo at $sha ($ref)"
 
       - name: Fetch latest submodule remote
         continue-on-error: true
