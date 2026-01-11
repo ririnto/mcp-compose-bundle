@@ -1,0 +1,82 @@
+name: Update guidelines submodule
+
+on:
+  repository_dispatch:
+    types:
+      - guidelines.updated
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update-submodule:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout parent repo
+        uses: actions/checkout@v4
+        with:
+          submodules: 'recursive'
+
+      - name: Configure git
+        run: |-
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Validate repository_dispatch payload
+        run: |-
+          echo "Event payload:" && cat "$GITHUB_EVENT_PATH"
+
+          repo=$(jq -r '.client_payload.repository // empty' "$GITHUB_EVENT_PATH")
+          sha=$(jq -r '.client_payload.sha // empty' "$GITHUB_EVENT_PATH")
+          ref=$(jq -r '.client_payload.ref // empty' "$GITHUB_EVENT_PATH")
+
+          # Validate repository
+          if [ "$repo" != "ririnto/agents-guidelines-ko" ]; then
+            echo "::error::Invalid repository: $repo (expected ririnto/agents-guidelines-ko)"
+            exit 1
+          fi
+
+          # Validate payload completeness
+          if [ -z "$sha" ] || [ -z "$ref" ]; then
+            echo "::warning::Incomplete payload - sha: $sha, ref: $ref"
+          else
+            echo "::notice::Validated payload from $repo at $sha ($ref)"
+          fi
+
+      - name: Fetch latest submodule remote
+        continue-on-error: true
+        run: |-
+          git submodule foreach --recursive 'git fetch origin'
+
+      - name: Update guidelines submodule to latest main
+        continue-on-error: true
+        run: |-
+          git submodule update --remote --merge --force guidelines
+
+      - name: Show submodule status
+        run: git submodule status --recursive
+
+      - name: Check for changes
+        id: check_changes
+        run: |-
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Create or update Pull Request
+        if: steps.check_changes.outputs.changed == 'true'
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: 'update/guidelines-submodule'
+          commit-message: 'chore(submodule): update guidelines to latest main'
+          title: 'chore(submodule): update guidelines to latest main'
+          body: |-
+            This pull request updates the `guidelines` submodule to the latest `main` from the guidelines repository.
+            The change was created automatically by the update-guidelines-submodule workflow.
+          base: main
+          add-paths: guidelines
+          delete-branch: false
