@@ -25,8 +25,6 @@ jobs:
     steps:
       - name: Checkout parent repo
         uses: actions/checkout@v4
-        with:
-          submodules: 'recursive'
 
       - name: Configure git
         run: |-
@@ -51,6 +49,10 @@ jobs:
           fi
 
           echo "::notice::Validated inputs from $repo at $sha ($ref)"
+
+      - name: Initialize submodule
+        run: |-
+          git submodule init guidelines
 
       - name: Fetch latest submodule remote
         continue-on-error: true
