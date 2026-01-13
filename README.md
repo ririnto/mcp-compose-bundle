@@ -10,6 +10,13 @@ HTTP를 지원하지 않는 서버는 **로컬 stdio**로 실행하도록 샘플
 ## :rocket: Quick Start
 
 ```sh
+# Submodule 초기화 (guidelines 폴더 포함)
+git submodule update --init --recursive
+
+# 환경 변수 설정 (.env 파일 생성)
+cp .env.example .env
+
+# 서비스 시작
 docker compose up -d
 docker compose up -d awesome-copilot everything context7
 docker compose logs -f
@@ -38,6 +45,18 @@ docker compose down
 - **fetch**: fetches URLs from the internet (supports robots.txt bypass)
 
 ## :wrench: Notes
+
+### 환경 변수 설정
+
+`.env.example`을 복사하여 `.env` 파일을 생성하고 필요한 환경 변수를 설정합니다:
+
+```sh
+cp .env.example .env
+```
+
+주요 환경 변수:
+- `MCP_CONTEXT7_API_KEY`: Context7의 API key (선택사항, rate limit 증가 또는 private repo 접근용)
+- `MCP_MARKITDOWN_WORKDIR_PATH`: MarkItDown에서 마운트할 로컬 디렉토리 (기본값: `$HOME/Projects`)
 
 ### JSON config에서 비활성화
 
@@ -80,11 +99,15 @@ JetBrains IDE MCP(stdio)는 GitHub Copilot MCP stdio bundle jar가 필요합니�
 
 ```text
 mcp-compose-bundle/
-├── claude.json
-├── mcp.json
-├── config.toml
-├── docker-compose.yaml
-└── dockerfiles/
+├── .env.example              # 환경 변수 설정 템플릿
+├── .gitmodules              # Git submodule 설정
+├── claude.json              # Claude Code MCP 설정
+├── mcp.json                 # VS Code MCP 설정
+├── config.toml              # Codex CLI MCP 설정
+├── docker-compose.yaml       # Docker Compose 설정
+├── .github/workflows/       # GitHub Actions (guidelines submodule 업데이트)
+├── dockerfiles/             # MCP 서버 Dockerfile들
+└── guidelines/              # Git submodule: 에이전트 가이드라인
 ```
 
 ## :memo: Architecture (high level)

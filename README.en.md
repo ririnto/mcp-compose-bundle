@@ -11,6 +11,13 @@ to run **locally via stdio** (no Docker) via sample configs
 ## :rocket: Quick Start
 
 ```sh
+# Initialize submodule (includes guidelines folder)
+git submodule update --init --recursive
+
+# Set up environment variables (create .env file)
+cp .env.example .env
+
+# Start services
 docker compose up -d
 docker compose up -d awesome-copilot everything context7
 docker compose logs -f
@@ -39,6 +46,18 @@ Local stdio servers are configured in [`mcp.json`](./mcp.json). Typical ones inc
 - **fetch**: fetches URLs from the internet (supports robots.txt bypass)
 
 ## :wrench: Notes
+
+### Environment Variables
+
+Copy `.env.example` to `.env` and customize as needed:
+
+```sh
+cp .env.example .env
+```
+
+Key environment variables:
+- `MCP_CONTEXT7_API_KEY`: Context7 API key (optional, for higher rate limits or private repo access)
+- `MCP_MARKITDOWN_WORKDIR_PATH`: Local directory path to mount in MarkItDown (default: `$HOME/Projects`)
 
 ### Disabling servers in JSON configs
 
@@ -83,11 +102,15 @@ jar path so the jar filename/version can change.
 
 ```text
 mcp-compose-bundle/
-├── claude.json
-├── mcp.json
-├── config.toml
-├── docker-compose.yaml
-└── dockerfiles/
+├── .env.example              # Environment variables template
+├── .gitmodules              # Git submodule configuration
+├── claude.json              # Claude Code MCP config
+├── mcp.json                 # VS Code MCP config
+├── config.toml              # Codex CLI MCP config
+├── docker-compose.yaml       # Docker Compose configuration
+├── .github/workflows/       # GitHub Actions (guidelines submodule update)
+├── dockerfiles/             # MCP server Dockerfiles
+└── guidelines/              # Git submodule: agent guidelines
 ```
 
 ## :memo: Architecture (high level)
