@@ -1,17 +1,5 @@
 {
   "servers": {
-    "awesome-copilot": {
-      "type": "http",
-      "url": "http://localhost:48080/mcp"
-    },
-    "chrome-devtools-mcp": {
-      "type": "stdio",
-      "command": "npx",
-      "args": [
-        "-y",
-        "chrome-devtools-mcp"
-      ]
-    },
     "codex": {
       "type": "stdio",
       "command": "npx",
@@ -24,32 +12,16 @@
       "type": "http",
       "url": "http://localhost:48082/mcp"
     },
-    "everything": {
-      "type": "http",
-      "url": "http://localhost:48081/mcp"
-    },
     "fetch": {
       "type": "stdio",
-      "command": "uvx",
+      "command": "mcp-server-fetch",
       "args": [
-        "mcp-server-fetch",
         "--ignore-robots-txt"
-      ]
-    },
-    "filesystem": {
-      "type": "stdio",
-      "command": "sh",
-      "args": [
-        "-lc",
-        "npx -y @modelcontextprotocol/server-filesystem $HOME/Projects"
       ]
     },
     "git": {
       "type": "stdio",
-      "command": "uvx",
-      "args": [
-        "mcp-server-git"
-      ]
+      "command": "mcp-server-git"
     },
     "jetbrains": {
       "type": "stdio",
@@ -74,10 +46,6 @@
         "@modelcontextprotocol/server-memory"
       ]
     },
-    "playwright": {
-      "type": "http",
-      "url": "http://localhost:48084/mcp"
-    },
     "ripgrep": {
       "type": "stdio",
       "command": "npx",
@@ -96,27 +64,13 @@
     },
     "serena": {
       "type": "stdio",
-      "command": "uvx",
+      "command": "serena-mcp-server",
       "args": [
-        "--from",
-        "git+https://github.com/oraios/serena",
-        "serena",
-        "start-mcp-server",
         "--enable-web-dashboard",
         "false",
         "--context",
-        "ide",
+        "codex",
         "--project-from-cwd"
-      ]
-    },
-    "time": {
-      "type": "stdio",
-      "env": {
-        "LOCAL_TIMEZONE": "Asia/Seoul"
-      },
-      "command": "uvx",
-      "args": [
-        "mcp-server-time"
       ]
     }
   }

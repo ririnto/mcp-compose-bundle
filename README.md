@@ -23,6 +23,43 @@ docker compose logs -f
 docker compose down
 ```
 
+## :wrench: Configuration Management
+
+이 프로젝트는 **YAML 기반의 단일 구성 관리 시스템**을 사용합니다:
+
+- **마스터 구성 파일**: `config.yaml` (이 파일만 편집하세요)
+- **생성된 파일**: `claude.json`, `mcp.json` (자동 생성됨)
+
+### 구성 생성
+
+```bash
+# 구성 파일 생성
+./scripts/generate_configs.sh
+```
+
+자세한 내용은 [scripts/README.md](scripts/README.md)를 참조하세요.
+
+## :wrench: Prerequisites
+
+로컬 stdio MCP 서버를 사용하기 전에 다음 패키지를 설치해야 합니다:
+
+```sh
+# MCP 서버 설치 (uv tool 사용)
+uv tool install mcp-server-fetch
+uv tool install mcp-server-git
+uv tool install git+https://github.com/oraios/serena
+```
+
+> **Note**: `uv`는 Python 패키지 관리 도구입니다. 아직 설치하지 않았다면 먼저 설치하세요:
+> macOS에서는 Homebrew를 사용해 uv를 설치할 수 있습니다:
+> ```sh
+> brew install uv
+> ```
+> 또는 공식 설치 스크립트를 사용하세요:
+> ```sh
+> curl -LsSf https://astral.sh/uv/install.sh | sh
+> ```
+
 ## :package: Included MCP Servers
 
 ### Docker Services (HTTP/streamableHttp)
@@ -31,18 +68,18 @@ docker compose down
 |-----------------|-------|----------------------------------------|
 | awesome-copilot | 48080 | Copilot chat modes, collections        |
 | context7        | 48082 | Library docs from Context7             |
-| everything      | 48081 | MCP test server                        |
 | markitdown      | 48083 | Converts docs to Markdown              |
 | playwright      | 48084 | Browser automation                     |
 
 ### Local stdio Servers (no Docker)
 
 로컬 stdio 서버들은 [`mcp.json`](./mcp.json)에 설정되어 있습니다.
+설치 후 직접 명령어를 실행합니다:
 
-- **filesystem**: local file system operations
-- **git**: Git operations on your local repo
-- **serena**: semantic code analysis via local language servers
-- **fetch**: fetches URLs from the internet (supports robots.txt bypass)
+- **filesystem**: local file system operations (`npx -y @modelcontextprotocol/server-filesystem`)
+- **git**: Git operations on your local repo (`mcp-server-git`)
+- **serena**: semantic code analysis via local language servers (`serena-mcp-server`)
+- **fetch**: fetches URLs from the internet (supports robots.txt bypass) (`mcp-server-fetch`)
 
 ## :wrench: Notes
 
@@ -151,8 +188,6 @@ flowchart LR
     clients -->|:48084 → :48084| PW
     clients -->|:48083 → :3001| MD
     clients -->|:48080 → :8080| AC
-    clients -->|:48081 → :3001| EV
-
     subgraph local["Local stdio MCP servers"]
         direction TB
         CDP["chrome-devtools-mcp"]
@@ -165,7 +200,6 @@ flowchart LR
         JetBrains["jetbrains"]
         Serena["serena"]
         CodexSrv["codex-mcp-server"]
-        Time["time"]
     end
 
     clients -->|stdio| CDP
@@ -178,7 +212,6 @@ flowchart LR
     clients -->|stdio| JetBrains
     clients -->|stdio| Serena
     clients -->|stdio| CodexSrv
-    clients -->|stdio| Time
 
     classDef clientStyle fill:#e1f5ff,stroke:#01579b,stroke-width:2px,color:#000
     classDef redStyle fill:#ffebee,stroke:#c62828,stroke-width:2px,color:#000
@@ -196,7 +229,7 @@ flowchart LR
     class FS greenStyle
     class Git,JetBrains blueStyle
     class Serena,CodexSrv indigoStyle
-    class AC,EV,Time purpleStyle
+    class AC purpleStyle
 
     linkStyle 3,4,5,6,7 stroke:#0d47a1,stroke-width:2.5px
     linkStyle 8,9,10,11,12,13,14,15,16,17,18 stroke:#1b5e20,stroke-width:2.5px
@@ -216,7 +249,7 @@ flowchart LR
 | Green  | File System   | Filesystem                                   |
 | Blue   | Dev Tools     | Git, JetBrains                               |
 | Indigo | Code Analysis | Serena, Codex MCP Server                     |
-| Purple | Meta/Testing  | Awesome GitHub Copilot, Everything, Time     |
+| Purple | Meta/Testing  | Awesome GitHub Copilot                     |
 
 **Connection Type Colors**:
 

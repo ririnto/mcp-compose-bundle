@@ -32,18 +32,6 @@ services:
       - "127.0.0.1:${MCP_CONTEXT7_PORT:-48082}:3000"
     restart: unless-stopped
 
-  everything:
-    build:
-      context: .
-      dockerfile: dockerfiles/everything.Dockerfile
-    container_name: mcp-everything
-    environment:
-      <<: *common-env
-    mem_limit: 128m
-    ports:
-      - "127.0.0.1:${MCP_EVERYTHING_PORT:-48081}:3001"
-    restart: unless-stopped
-
   markitdown:
     build:
       context: .
