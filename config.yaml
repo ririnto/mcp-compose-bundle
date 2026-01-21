@@ -90,3 +90,11 @@ mcp_servers:
       - --context
       - codex
       - --project-from-cwd
+  exa:
+    type: http
+    enabled: true
+    url: https://mcp.exa.ai/mcp
+  grep-app:
+    type: http
+    enabled: true
+    url: https://mcp.grep.app
