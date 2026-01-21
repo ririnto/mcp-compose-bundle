@@ -72,6 +72,14 @@
         "codex",
         "--project-from-cwd"
       ]
+    },
+    "exa": {
+      "type": "http",
+      "url": "https://mcp.exa.ai/mcp"
+    },
+    "grep-app": {
+      "type": "http",
+      "url": "https://mcp.grep.app"
     }
   }
 }

@@ -112,6 +112,16 @@
         "--project-from-cwd"
       ],
       "enabled": true
+    },
+    "exa": {
+      "type": "remote",
+      "url": "https://mcp.exa.ai/mcp",
+      "enabled": true
+    },
+    "grep-app": {
+      "type": "remote",
+      "url": "https://mcp.grep.app",
+      "enabled": true
     }
   }
 }

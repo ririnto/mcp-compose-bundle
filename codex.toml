@@ -79,6 +79,16 @@ enabled = true
 command = "serena-mcp-server"
 args = [ "--enable-web-dashboard", "false", "--context", "codex", "--project-from-cwd"]
 
+[mcp_servers.exa]
+type = "remote"
+enabled = true
+url = "https://mcp.exa.ai/mcp"
+
+[mcp_servers.grep-app]
+type = "remote"
+enabled = true
+url = "https://mcp.grep.app"
+
 [mcp_servers.jetbrains.env]
 IJ_MCP_SERVER_PORT = "64342"
 
