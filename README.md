@@ -71,6 +71,15 @@ uv tool install git+https://github.com/oraios/serena
 | markitdown      | 48083 | Converts docs to Markdown              |
 | playwright      | 48084 | Browser automation                     |
 
+### Public HTTP Servers (Hosted)
+
+공개 호스팅되는 HTTP MCP 서버들입니다. 별도 설치 없이 HTTP URL로 직접 연결합니다:
+
+| Service   | URL                       | Description                                        |
+|-----------|---------------------------|----------------------------------------------------|
+| exa       | https://mcp.exa.ai/mcp    | AI-powered web search, code search, research tools |
+| grep-app  | https://mcp.grep.app      | Search code across public GitHub repositories      |
+
 ### Local stdio Servers (no Docker)
 
 로컬 stdio 서버들은 [`mcp.json`](./mcp.json)에 설정되어 있습니다.

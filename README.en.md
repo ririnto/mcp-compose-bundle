@@ -56,6 +56,15 @@ uv tool install git+https://github.com/oraios/serena
 | markitdown      | 48083 | Converts docs to Markdown              |
 | playwright      | 48084 | Browser automation                     |
 
+### Public HTTP Servers (Hosted)
+
+Publicly hosted HTTP MCP servers. Connect directly via HTTP URL without installation:
+
+| Service   | URL                       | Description                                        |
+|-----------|---------------------------|----------------------------------------------------|
+| exa       | https://mcp.exa.ai/mcp    | AI-powered web search, code search, research tools |
+| grep-app  | https://mcp.grep.app      | Search code across public GitHub repositories      |
+
 ### Local stdio Servers (no Docker)
 
 Local stdio servers are configured in [`mcp.json`](./mcp.json). After installation, they execute directly:
