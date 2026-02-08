@@ -2,11 +2,9 @@
 
 [한국어](README.md)
 
-A Docker Compose bundle to run **native HTTP / streamableHttp**
-Model Context Protocol (MCP) servers.
-Servers that don't natively support HTTP/streamableHttp are configured
-to run **locally via stdio** (no Docker) via sample configs
-(`mcp.json`, `claude.json`, `config.toml`).
+A bundle for configuring MCP (Model Context Protocol) servers using
+**bunx/uvx (stdio)** and **public HTTP** endpoints.
+Edit only `config.yaml` — client-specific config files are auto-generated.
 
 ## :rocket: Quick Start
 
@@ -14,140 +12,108 @@ to run **locally via stdio** (no Docker) via sample configs
 # Initialize submodule (includes guidelines folder)
 git submodule update --init --recursive
 
-# Set up environment variables (create .env file)
-cp .env.example .env
+# Generate config files
+./generate-configs.sh
+```
 
-# Start services
-docker compose up -d
-docker compose up -d awesome-copilot everything context7
-docker compose logs -f
-docker compose down
+## :wrench: Configuration Management
+
+This project uses a **single YAML-based configuration system**:
+
+- **Master config**: `config.yaml` (edit this file only)
+- **Generated files**: `claude.json`, `copilot.json`, `codex.toml`, `opencode.json` (auto-generated)
+
+### Generate Configs
+
+```bash
+# Generate all client config files
+./generate-configs.sh
 ```
 
 ## :wrench: Prerequisites
 
-Before using local stdio MCP servers, install the following packages:
+Install the following tools before using local stdio MCP servers:
 
 ```sh
-# Install MCP servers (using uv tool)
-uv tool install mcp-server-fetch
-uv tool install mcp-server-git
-uv tool install git+https://github.com/oraios/serena
+# Install bun and uv via asdf (recommended)
+asdf plugin add bun
+asdf plugin add uv
+asdf install bun latest
+asdf install uv latest
+asdf set --home bun latest
+asdf set --home uv latest
 ```
 
-> **Note**: `uv` is a Python package manager. If not installed, install it first:
-> On macOS, you can install uv using Homebrew:
-> ```sh
-> brew install uv
-> ```
-> Or use the official installer:
-> ```sh
-> curl -LsSf https://astral.sh/uv/install.sh | sh
-> ```
+> **Note**: `bunx` runs npm packages without installing them globally,
+> and `uvx` runs Python packages without installing them globally.
+> We recommend using [asdf](https://asdf-vm.com/) for version management.
 
 ## :package: Included MCP Servers
 
-### Docker Services (HTTP/streamableHttp)
+### Local stdio Servers (bunx / uvx)
 
-| Service         | Port  | Description                            |
-|-----------------|-------|----------------------------------------|
-| awesome-copilot | 48080 | Copilot chat modes, collections        |
-| context7        | 48082 | Library docs from Context7             |
-| markitdown      | 48083 | Converts docs to Markdown              |
-| playwright      | 48084 | Browser automation                     |
+Downloaded and executed automatically via `bunx` or `uvx` — no manual installation required:
+
+| Server | Runner | Command | Description |
+|---|---|---|---|
+| context7 | bunx | `@upstash/context7-mcp@latest` | Up-to-date library docs and code examples |
+| fetch | uvx | `mcp-server-fetch` | Fetch URL page content (ignores robots.txt) |
+| git | uvx | `mcp-server-git` | Git repository operations and automation |
+| markitdown | uvx | `markitdown-mcp` | Convert various documents to Markdown |
+| playwright | bunx | `@playwright/mcp@latest` | Browser automation |
 
 ### Public HTTP Servers (Hosted)
 
 Publicly hosted HTTP MCP servers. Connect directly via HTTP URL without installation:
 
-| Service   | URL                       | Description                                        |
-|-----------|---------------------------|----------------------------------------------------|
-| exa       | https://mcp.exa.ai/mcp    | AI-powered web search, code search, research tools |
-| grep-app  | https://mcp.grep.app      | Search code across public GitHub repositories      |
-
-### Local stdio Servers (no Docker)
-
-Local stdio servers are configured in [`mcp.json`](./mcp.json). After installation, they execute directly:
-
-- **filesystem**: local file system operations (`npx -y @modelcontextprotocol/server-filesystem`)
-- **git**: Git operations on your local repo (`mcp-server-git`)
-- **serena**: semantic code analysis via local language servers (`serena-mcp-server`)
-- **fetch**: fetches URLs from the internet (supports robots.txt bypass) (`mcp-server-fetch`)
+| Service | URL | Description |
+|---|---|---|
+| exa | https://mcp.exa.ai/mcp | AI-powered web search, code search, research tools |
+| grep-app | https://mcp.grep.app | Search code across public GitHub repositories |
 
 ## :wrench: Notes
 
-### Environment Variables
-
-Copy `.env.example` to `.env` and customize as needed:
-
-```sh
-cp .env.example .env
-```
-
-Key environment variables:
-- `MCP_CONTEXT7_API_KEY`: Context7 API key (optional, for higher rate limits or private repo access)
-- `MCP_MARKITDOWN_WORKDIR_PATH`: Local directory path to mount in MarkItDown (default: `$HOME/Projects`)
-
 ### Disabling servers in JSON configs
 
-`mcp.json` / `claude.json` are JSON, so you can’t comment out entries.
-To disable a server, remove its server entry from the file.
-(For Codex `config.toml`, you can use `enabled = true/false`.)
+`claude.json` / `copilot.json` are JSON, so you can't comment out entries.
+To disable a server, remove its entry from the file.
+(For Codex `codex.toml`, you can use `enabled = true/false`.)
 
 ### `fetch` MCP server (robots.txt bypass)
 
 `mcp-server-fetch` obeys robots.txt by default.
-You can disable this behavior by adding `--ignore-robots-txt` to the `args` list.
+Add `--ignore-robots-txt` to the `args` list to disable this behavior.
 
 - Upstream: [mcp-server-fetch][fetch-upstream]
 
-### Serena context selection
-
-Serena adjusts its toolset at startup with `--context <name>`.
-For the most up-to-date definitions,
-check the official docs and the actual context YAMLs.
-
-- [Serena Docs][serena-docs]
-- Context YAMLs:
-  - [claude-code.yml][serena-claude]
-  - [ide.yml][serena-ide]
-  - [codex.yml][serena-codex]
-
-## :gear: JetBrains MCP setup
-
-JetBrains IDE MCP(stdio) requires the GitHub Copilot MCP stdio bundle jar.
-This repo wraps the command with `command = "sh"` and uses a `$HOME`-based
-jar path so the jar filename/version can change.
-
-- [MCP stdio bundle][jetbrains-bundle]
-
 ## :triangular_ruler: Client Config Samples
 
-- VS Code: see [`mcp.json`](./mcp.json)
-- Codex CLI: see [`config.toml`](./config.toml)
+- VS Code: see [`copilot.json`](./copilot.json)
+- Codex CLI: see [`codex.toml`](./codex.toml)
 - Claude Code: see [`claude.json`](./claude.json)
+- OpenCode: see [`opencode.json`](./opencode.json)
 
 ## :card_file_box: Project Structure
 
 ```text
 mcp-compose-bundle/
-├── .env.example              # Environment variables template
-├── .gitmodules              # Git submodule configuration
-├── claude.json              # Claude Code MCP config
-├── mcp.json                 # VS Code MCP config
-├── config.toml              # Codex CLI MCP config
-├── docker-compose.yaml       # Docker Compose configuration
-├── .github/workflows/       # GitHub Actions (guidelines submodule update)
-├── dockerfiles/             # MCP server Dockerfiles
-└── guidelines/              # Git submodule: agent guidelines
+├── config.yaml               # Master config file (edit this only)
+├── generate-configs.sh        # Config generation script
+├── claude.json                # Claude Code MCP config (auto-generated)
+├── copilot.json               # VS Code Copilot MCP config (auto-generated)
+├── codex.toml                 # Codex CLI MCP config (auto-generated)
+├── opencode.json              # OpenCode MCP config (auto-generated)
+├── .gitmodules                # Git submodule configuration
+├── .github/workflows/         # GitHub Actions (guidelines submodule update)
+└── guidelines/                # Git submodule: agent guidelines
 ```
 
 ## :memo: Architecture (high level)
 
 ```mermaid
-flowchart TB
+flowchart LR
     subgraph clients["MCP Clients"]
-        direction LR
+        direction TB
         VSCode["VS Code"]
         Claude["Claude Code"]
         Codex["Codex"]
@@ -156,104 +122,74 @@ flowchart TB
         VSCode ~~~ Claude ~~~ Codex ~~~ Other
     end
 
-    subgraph docker["Docker Compose (native HTTP/streamableHttp)"]
-        direction LR
-        subgraph c7_container["context7"]
-            C7["context7-mcp"]
-        end
-
-        subgraph pw_container["playwright"]
-            PW["playwright-mcp"]
-        end
-
-        subgraph md_container["markitdown"]
-            MD["markitdown-mcp"]
-        end
-
-        subgraph ac_container["awesome-copilot"]
-            AC["awesome-copilot"]
-        end
-
-        subgraph ev_container["everything"]
-            EV["mcp-server-everything"]
-        end
+    subgraph local["Local stdio (bunx / uvx)"]
+        direction TB
+        C7["context7<br />(bunx)"]
+        Fetch["fetch<br />(uvx)"]
+        Git["git<br />(uvx)"]
+        MD["markitdown<br />(uvx)"]
+        PW["playwright<br />(bunx)"]
     end
 
-    clients -->|:48082 → :3000| C7
-    clients -->|:48084 → :48084| PW
-    clients -->|:48083 → :3001| MD
-    clients -->|:48080 → :8080| AC
-    subgraph local["Local stdio MCP servers"]
-        direction LR
-        CDP["chrome-devtools-mcp"]
-        Fetch["fetch (--ignore-robots-txt)"]
-        RG["ripgrep"]
-        Memory["memory"]
-        Seq["sequential-thinking"]
-        FS["filesystem"]
-        Git["git"]
-        JetBrains["jetbrains"]
-        Serena["serena"]
-        CodexSrv["codex-mcp-server"]
+    subgraph hosted["Public HTTP"]
+        direction TB
+        Exa["exa"]
+        Grep["grep-app"]
     end
 
-    clients -->|stdio| CDP
+    C7_API["context7.com<br />Library docs API"]
+    Web["Web Pages<br />Internet URLs"]
+    LocalRepo["Local Git Repo"]
+    LocalFiles["Local Files / URLs<br />Conversion targets"]
+    Browser["Web Browser<br />Browser automation"]
+    ExaAPI["Exa API<br />Web & code search"]
+    GrepAPI["grep.app API<br />GitHub code search"]
+
+    clients -->|stdio| C7
     clients -->|stdio| Fetch
-    clients -->|stdio| RG
-    clients -->|stdio| Memory
-    clients -->|stdio| Seq
-    clients -->|stdio| FS
     clients -->|stdio| Git
-    clients -->|stdio| JetBrains
-    clients -->|stdio| Serena
-    clients -->|stdio| CodexSrv
+    clients -->|stdio| MD
+    clients -->|stdio| PW
+    clients -->|HTTP| Exa
+    clients -->|HTTP| Grep
+
+    C7 -->|API call| C7_API
+    Fetch -->|HTTP fetch| Web
+    Git -->|local ops| LocalRepo
+    MD -->|convert| LocalFiles
+    PW -->|automate| Browser
+    Exa -->|API call| ExaAPI
+    Grep -->|API call| GrepAPI
 
     classDef clientStyle fill:#e1f5ff,stroke:#01579b,stroke-width:2px,color:#000
-    classDef redStyle fill:#ffebee,stroke:#c62828,stroke-width:2px,color:#000
-    classDef orangeStyle fill:#fff3e0,stroke:#e65100,stroke-width:2px,color:#000
-    classDef yellowStyle fill:#fffde7,stroke:#f57f17,stroke-width:2px,color:#000
-    classDef greenStyle fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,color:#000
-    classDef blueStyle fill:#e3f2fd,stroke:#1565c0,stroke-width:2px,color:#000
-    classDef indigoStyle fill:#e8eaf6,stroke:#283593,stroke-width:2px,color:#000
-    classDef purpleStyle fill:#f3e5f5,stroke:#6a1b9a,stroke-width:2px,color:#000
+    classDef bunxStyle fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,color:#000
+    classDef uvxStyle fill:#e3f2fd,stroke:#1565c0,stroke-width:2px,color:#000
+    classDef httpStyle fill:#fff3e0,stroke:#e65100,stroke-width:2px,color:#000
+    classDef extStyle fill:#fafafa,stroke:#757575,stroke-width:1px,color:#000
 
     class VSCode,Claude,Codex,Other clientStyle
-    class C7,PW,Fetch,CDP redStyle
-    class MD,RG,Memory orangeStyle
-    class Seq yellowStyle
-    class FS greenStyle
-    class Git,JetBrains blueStyle
-    class Serena,CodexSrv indigoStyle
-    class AC purpleStyle
+    class C7,PW bunxStyle
+    class Fetch,Git,MD uvxStyle
+    class Exa,Grep httpStyle
+    class C7_API,Web,LocalRepo,LocalFiles,Browser,ExaAPI,GrepAPI extStyle
 
-    linkStyle 3,4,5,6,7 stroke:#0d47a1,stroke-width:2.5px
-    linkStyle 8,9,10,11,12,13,14,15,16,17,18 stroke:#1b5e20,stroke-width:2.5px
+    linkStyle 0,1,2,3,4 stroke:#2e7d32,stroke-width:2px
+    linkStyle 5,6 stroke:#e65100,stroke-width:2px
+    linkStyle 7,8,9,10,11,12,13 stroke:#757575,stroke-width:1.5px
 ```
 
-> :bulb: **Port mapping**: `host:container`
-> (e.g., `48080→8080` means host port 48080 maps to container port 8080).
-> Only servers that are **native HTTP/streamableHttp** are kept in Docker.
+### MCP Server Classification
 
-### MCP Server Classification by Type
+| Type | Servers | Execution Method |
+|---|---|---|
+| Web/Network | context7, fetch, playwright | bunx / uvx (stdio) |
+| Utilities | markitdown | uvx (stdio) |
+| Dev Tools | git | uvx (stdio) |
+| Search | exa, grep-app | Public HTTP |
 
-| Color  | Type          | Servers                                      |
-|--------|---------------|----------------------------------------------|
-| Red    | Web/Network   | Context7, Playwright, Fetch, Chrome DevTools |
-| Orange | Utilities     | MarkItDown, Ripgrep, Memory                  |
-| Yellow | AI/Thinking   | Sequential Thinking                          |
-| Green  | File System   | Filesystem                                   |
-| Blue   | Dev Tools     | Git, JetBrains                               |
-| Indigo | Code Analysis | Serena, Codex MCP Server                     |
-| Purple | Meta/Testing  | Awesome GitHub Copilot                     |
+**Connection Types**:
 
-**Connection Type Colors**:
-
-- **Blue arrows**: HTTP/streamableHttp (Docker)
-- **Green arrows**: stdio (local)
+- **Orange arrows**: HTTP (publicly hosted)
+- **Green arrows**: stdio (local bunx/uvx)
 
 [fetch-upstream]: https://github.com/modelcontextprotocol/servers/tree/main/src/fetch
-[serena-docs]: https://oraios.github.io/serena/02-usage/050_configuration.html
-[serena-claude]: https://raw.githubusercontent.com/oraios/serena/main/src/serena/resources/config/contexts/claude-code.yml
-[serena-ide]: https://raw.githubusercontent.com/oraios/serena/main/src/serena/resources/config/contexts/ide.yml
-[serena-codex]: https://raw.githubusercontent.com/oraios/serena/main/src/serena/resources/config/contexts/codex.yml
-[jetbrains-bundle]: https://github.com/ririnto/mcpserver-stdio-bundle

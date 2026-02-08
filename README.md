@@ -2,10 +2,9 @@
 
 [English](README.en.md)
 
-Docker Compose로 **native HTTP / streamableHttp**
-Model Context Protocol (MCP) 서버들을 한 번에 띄우는 번들입니다.
-HTTP를 지원하지 않는 서버는 **로컬 stdio**로 실행하도록 샘플 설정
-(`mcp.json`, `claude.json`, `config.toml`)을 제공합니다.
+MCP(Model Context Protocol) 서버들을 **bunx/uvx(stdio)** 및 **공개 HTTP** 방식으로
+한 번에 구성하는 번들입니다.
+`config.yaml` 하나만 편집하면 여러 클라이언트용 설정 파일이 자동 생성됩니다.
 
 ## :rocket: Quick Start
 
@@ -13,14 +12,8 @@ HTTP를 지원하지 않는 서버는 **로컬 stdio**로 실행하도록 샘플
 # Submodule 초기화 (guidelines 폴더 포함)
 git submodule update --init --recursive
 
-# 환경 변수 설정 (.env 파일 생성)
-cp .env.example .env
-
-# 서비스 시작
-docker compose up -d
-docker compose up -d awesome-copilot everything context7
-docker compose logs -f
-docker compose down
+# 구성 파일 생성
+./generate-configs.sh
 ```
 
 ## :wrench: Configuration Management
@@ -28,87 +21,63 @@ docker compose down
 이 프로젝트는 **YAML 기반의 단일 구성 관리 시스템**을 사용합니다:
 
 - **마스터 구성 파일**: `config.yaml` (이 파일만 편집하세요)
-- **생성된 파일**: `claude.json`, `mcp.json` (자동 생성됨)
+- **생성된 파일**: `claude.json`, `copilot.json`, `codex.toml`, `opencode.json` (자동 생성됨)
 
 ### 구성 생성
 
 ```bash
-# 구성 파일 생성
-./scripts/generate_configs.sh
+# 모든 클라이언트 구성 파일 생성
+./generate-configs.sh
 ```
-
-자세한 내용은 [scripts/README.md](scripts/README.md)를 참조하세요.
 
 ## :wrench: Prerequisites
 
-로컬 stdio MCP 서버를 사용하기 전에 다음 패키지를 설치해야 합니다:
+로컬 stdio MCP 서버를 사용하기 전에 다음 도구를 설치해야 합니다:
 
 ```sh
-# MCP 서버 설치 (uv tool 사용)
-uv tool install mcp-server-fetch
-uv tool install mcp-server-git
-uv tool install git+https://github.com/oraios/serena
+# asdf로 bun, uv 설치 (권장)
+asdf plugin add bun
+asdf plugin add uv
+asdf install bun latest
+asdf install uv latest
+asdf set --home bun latest
+asdf set --home uv latest
 ```
 
-> **Note**: `uv`는 Python 패키지 관리 도구입니다. 아직 설치하지 않았다면 먼저 설치하세요:
-> macOS에서는 Homebrew를 사용해 uv를 설치할 수 있습니다:
-> ```sh
-> brew install uv
-> ```
-> 또는 공식 설치 스크립트를 사용하세요:
-> ```sh
-> curl -LsSf https://astral.sh/uv/install.sh | sh
-> ```
+> **Note**: `bunx`는 npm 패키지를 설치 없이 실행하는 도구이고,
+> `uvx`는 Python 패키지를 설치 없이 실행하는 도구입니다.
+> 버전 관리를 위해 [asdf](https://asdf-vm.com/)를 통한 설치를 권장합니다.
 
 ## :package: Included MCP Servers
 
-### Docker Services (HTTP/streamableHttp)
+### Local stdio Servers (bunx / uvx)
 
-| Service         | Port  | Description                            |
-|-----------------|-------|----------------------------------------|
-| awesome-copilot | 48080 | Copilot chat modes, collections        |
-| context7        | 48082 | Library docs from Context7             |
-| markitdown      | 48083 | Converts docs to Markdown              |
-| playwright      | 48084 | Browser automation                     |
+별도 설치 없이 `bunx` 또는 `uvx`를 통해 자동으로 다운로드 및 실행됩니다:
+
+| Server | Runner | Command | Description |
+|---|---|---|---|
+| context7 | bunx | `@upstash/context7-mcp@latest` | 라이브러리 최신 문서 및 코드 예제 검색 |
+| fetch | uvx | `mcp-server-fetch` | URL 페이지 콘텐츠 가져오기 (robots.txt 무시) |
+| git | uvx | `mcp-server-git` | Git 저장소 조작 및 자동화 |
+| markitdown | uvx | `markitdown-mcp` | 다양한 문서를 Markdown으로 변환 |
+| playwright | bunx | `@playwright/mcp@latest` | 브라우저 자동화 |
 
 ### Public HTTP Servers (Hosted)
 
 공개 호스팅되는 HTTP MCP 서버들입니다. 별도 설치 없이 HTTP URL로 직접 연결합니다:
 
-| Service   | URL                       | Description                                        |
-|-----------|---------------------------|----------------------------------------------------|
-| exa       | https://mcp.exa.ai/mcp    | AI-powered web search, code search, research tools |
-| grep-app  | https://mcp.grep.app      | Search code across public GitHub repositories      |
-
-### Local stdio Servers (no Docker)
-
-로컬 stdio 서버들은 [`mcp.json`](./mcp.json)에 설정되어 있습니다.
-설치 후 직접 명령어를 실행합니다:
-
-- **filesystem**: local file system operations (`npx -y @modelcontextprotocol/server-filesystem`)
-- **git**: Git operations on your local repo (`mcp-server-git`)
-- **serena**: semantic code analysis via local language servers (`serena-mcp-server`)
-- **fetch**: fetches URLs from the internet (supports robots.txt bypass) (`mcp-server-fetch`)
+| Service | URL | Description |
+|---|---|---|
+| exa | https://mcp.exa.ai/mcp | AI 기반 웹 검색, 코드 검색, 리서치 도구 |
+| grep-app | https://mcp.grep.app | 공개 GitHub 저장소에서 코드 검색 |
 
 ## :wrench: Notes
 
-### 환경 변수 설정
-
-`.env.example`을 복사하여 `.env` 파일을 생성하고 필요한 환경 변수를 설정합니다:
-
-```sh
-cp .env.example .env
-```
-
-주요 환경 변수:
-- `MCP_CONTEXT7_API_KEY`: Context7의 API key (선택사항, rate limit 증가 또는 private repo 접근용)
-- `MCP_MARKITDOWN_WORKDIR_PATH`: MarkItDown에서 마운트할 로컬 디렉토리 (기본값: `$HOME/Projects`)
-
 ### JSON config에서 비활성화
 
-`mcp.json` / `claude.json`은 JSON이라 주석 처리가 불가능합니다.
+`claude.json` / `copilot.json`은 JSON이라 주석 처리가 불가능합니다.
 특정 서버를 끌려면 해당 서버 엔트리를 **삭제**하는 방식으로 관리하세요.
-(`config.toml`은 `enabled = true/false`로 토글 가능)
+(`codex.toml`은 `enabled = true/false`로 토글 가능)
 
 ### `fetch` MCP server (robots.txt bypass)
 
@@ -117,43 +86,26 @@ cp .env.example .env
 
 - Upstream: [mcp-server-fetch][fetch-upstream]
 
-### Serena context selection
-
-Serena는 실행 시점에 `--context <name>`으로 toolset을 조정합니다.
-가장 최신 정의/설명은 공식 문서와 context YAML을 확인하세요.
-
-- [Serena Docs][serena-docs]
-- Context YAMLs:
-  - [claude-code.yml][serena-claude]
-  - [ide.yml][serena-ide]
-  - [codex.yml][serena-codex]
-
-## :gear: JetBrains MCP setup
-
-JetBrains IDE MCP(stdio)는 GitHub Copilot MCP stdio bundle jar가 필요합니다.
-`command = "sh"`로 감싸 `$HOME` 기반 경로를 사용합니다.
-
-- [MCP stdio bundle][jetbrains-bundle]
-
 ## :triangular_ruler: Client Config Samples
 
-- VS Code: see [`mcp.json`](./mcp.json)
-- Codex CLI: see [`config.toml`](./config.toml)
+- VS Code: see [`copilot.json`](./copilot.json)
+- Codex CLI: see [`codex.toml`](./codex.toml)
 - Claude Code: see [`claude.json`](./claude.json)
+- OpenCode: see [`opencode.json`](./opencode.json)
 
 ## :card_file_box: Project Structure
 
 ```text
 mcp-compose-bundle/
-├── .env.example              # 환경 변수 설정 템플릿
-├── .gitmodules              # Git submodule 설정
-├── claude.json              # Claude Code MCP 설정
-├── mcp.json                 # VS Code MCP 설정
-├── config.toml              # Codex CLI MCP 설정
-├── docker-compose.yaml       # Docker Compose 설정
-├── .github/workflows/       # GitHub Actions (guidelines submodule 업데이트)
-├── dockerfiles/             # MCP 서버 Dockerfile들
-└── guidelines/              # Git submodule: 에이전트 가이드라인
+├── config.yaml               # 마스터 구성 파일 (이것만 편집)
+├── generate-configs.sh        # 구성 파일 생성 스크립트
+├── claude.json                # Claude Code MCP 설정 (자동 생성)
+├── copilot.json               # VS Code Copilot MCP 설정 (자동 생성)
+├── codex.toml                 # Codex CLI MCP 설정 (자동 생성)
+├── opencode.json              # OpenCode MCP 설정 (자동 생성)
+├── .gitmodules                # Git submodule 설정
+├── .github/workflows/         # GitHub Actions (guidelines submodule 업데이트)
+└── guidelines/                # Git submodule: 에이전트 가이드라인
 ```
 
 ## :memo: Architecture (high level)
@@ -170,104 +122,74 @@ flowchart LR
         VSCode ~~~ Claude ~~~ Codex ~~~ Other
     end
 
-    subgraph docker["Docker Compose (native HTTP/streamableHttp)"]
+    subgraph local["Local stdio (bunx / uvx)"]
         direction TB
-        subgraph c7_container["context7"]
-            C7["context7-mcp"]
-        end
-
-        subgraph pw_container["playwright"]
-            PW["playwright-mcp"]
-        end
-
-        subgraph md_container["markitdown"]
-            MD["markitdown-mcp"]
-        end
-
-        subgraph ac_container["awesome-copilot"]
-            AC["awesome-copilot"]
-        end
-
-        subgraph ev_container["everything"]
-            EV["mcp-server-everything"]
-        end
+        C7["context7<br />(bunx)"]
+        Fetch["fetch<br />(uvx)"]
+        Git["git<br />(uvx)"]
+        MD["markitdown<br />(uvx)"]
+        PW["playwright<br />(bunx)"]
     end
 
-    clients -->|:48082 → :3000| C7
-    clients -->|:48084 → :48084| PW
-    clients -->|:48083 → :3001| MD
-    clients -->|:48080 → :8080| AC
-    subgraph local["Local stdio MCP servers"]
+    subgraph hosted["Public HTTP"]
         direction TB
-        CDP["chrome-devtools-mcp"]
-        Fetch["fetch (--ignore-robots-txt)"]
-        RG["ripgrep"]
-        Memory["memory"]
-        Seq["sequential-thinking"]
-        FS["filesystem"]
-        Git["git"]
-        JetBrains["jetbrains"]
-        Serena["serena"]
-        CodexSrv["codex-mcp-server"]
+        Exa["exa"]
+        Grep["grep-app"]
     end
 
-    clients -->|stdio| CDP
+    C7_API["context7.com<br />라이브러리 문서 API"]
+    Web["Web Pages<br />인터넷 URL"]
+    LocalRepo["Local Git Repo<br />로컬 저장소"]
+    LocalFiles["Local Files / URLs<br />파일 변환 대상"]
+    Browser["Web Browser<br />브라우저 자동화"]
+    ExaAPI["Exa API<br />웹 검색 / 코드 검색"]
+    GrepAPI["grep.app API<br />GitHub 코드 검색"]
+
+    clients -->|stdio| C7
     clients -->|stdio| Fetch
-    clients -->|stdio| RG
-    clients -->|stdio| Memory
-    clients -->|stdio| Seq
-    clients -->|stdio| FS
     clients -->|stdio| Git
-    clients -->|stdio| JetBrains
-    clients -->|stdio| Serena
-    clients -->|stdio| CodexSrv
+    clients -->|stdio| MD
+    clients -->|stdio| PW
+    clients -->|HTTP| Exa
+    clients -->|HTTP| Grep
+
+    C7 -->|API call| C7_API
+    Fetch -->|HTTP fetch| Web
+    Git -->|local ops| LocalRepo
+    MD -->|convert| LocalFiles
+    PW -->|automate| Browser
+    Exa -->|API call| ExaAPI
+    Grep -->|API call| GrepAPI
 
     classDef clientStyle fill:#e1f5ff,stroke:#01579b,stroke-width:2px,color:#000
-    classDef redStyle fill:#ffebee,stroke:#c62828,stroke-width:2px,color:#000
-    classDef orangeStyle fill:#fff3e0,stroke:#e65100,stroke-width:2px,color:#000
-    classDef yellowStyle fill:#fffde7,stroke:#f57f17,stroke-width:2px,color:#000
-    classDef greenStyle fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,color:#000
-    classDef blueStyle fill:#e3f2fd,stroke:#1565c0,stroke-width:2px,color:#000
-    classDef indigoStyle fill:#e8eaf6,stroke:#283593,stroke-width:2px,color:#000
-    classDef purpleStyle fill:#f3e5f5,stroke:#6a1b9a,stroke-width:2px,color:#000
+    classDef bunxStyle fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,color:#000
+    classDef uvxStyle fill:#e3f2fd,stroke:#1565c0,stroke-width:2px,color:#000
+    classDef httpStyle fill:#fff3e0,stroke:#e65100,stroke-width:2px,color:#000
+    classDef extStyle fill:#fafafa,stroke:#757575,stroke-width:1px,color:#000
 
     class VSCode,Claude,Codex,Other clientStyle
-    class C7,PW,Fetch,CDP redStyle
-    class MD,RG,Memory orangeStyle
-    class Seq yellowStyle
-    class FS greenStyle
-    class Git,JetBrains blueStyle
-    class Serena,CodexSrv indigoStyle
-    class AC purpleStyle
+    class C7,PW bunxStyle
+    class Fetch,Git,MD uvxStyle
+    class Exa,Grep httpStyle
+    class C7_API,Web,LocalRepo,LocalFiles,Browser,ExaAPI,GrepAPI extStyle
 
-    linkStyle 3,4,5,6,7 stroke:#0d47a1,stroke-width:2.5px
-    linkStyle 8,9,10,11,12,13,14,15,16,17,18 stroke:#1b5e20,stroke-width:2.5px
+    linkStyle 0,1,2,3,4 stroke:#2e7d32,stroke-width:2px
+    linkStyle 5,6 stroke:#e65100,stroke-width:2px
+    linkStyle 7,8,9,10,11,12,13 stroke:#757575,stroke-width:1.5px
 ```
 
-> :bulb: **Port mapping**: `host:container`
-> (e.g., `48080→8080` means host port 48080 maps to container port 8080).
-> Only servers that are **native HTTP/streamableHttp** are kept in Docker.
+### MCP Server Classification
 
-### MCP Server Classification by Type
+| Type | Servers | 실행 방식 |
+|---|---|---|
+| Web/Network | context7, fetch, playwright | bunx / uvx (stdio) |
+| Utilities | markitdown | uvx (stdio) |
+| Dev Tools | git | uvx (stdio) |
+| Search | exa, grep-app | Public HTTP |
 
-| Color  | Type          | Servers                                      |
-|--------|---------------|----------------------------------------------|
-| Red    | Web/Network   | Context7, Playwright, Fetch, Chrome DevTools |
-| Orange | Utilities     | MarkItDown, Ripgrep, Memory                  |
-| Yellow | AI/Thinking   | Sequential Thinking                          |
-| Green  | File System   | Filesystem                                   |
-| Blue   | Dev Tools     | Git, JetBrains                               |
-| Indigo | Code Analysis | Serena, Codex MCP Server                     |
-| Purple | Meta/Testing  | Awesome GitHub Copilot                     |
+**Connection Type**:
 
-**Connection Type Colors**:
-
-- **Blue arrows**: HTTP/streamableHttp (Docker)
-- **Green arrows**: stdio (local)
+- **Orange arrows**: HTTP (공개 호스팅)
+- **Green arrows**: stdio (로컬 bunx/uvx)
 
 [fetch-upstream]: https://github.com/modelcontextprotocol/servers/tree/main/src/fetch
-[serena-docs]: https://oraios.github.io/serena/02-usage/050_configuration.html
-[serena-claude]: https://raw.githubusercontent.com/oraios/serena/main/src/serena/resources/config/contexts/claude-code.yml
-[serena-ide]: https://raw.githubusercontent.com/oraios/serena/main/src/serena/resources/config/contexts/ide.yml
-[serena-codex]: https://raw.githubusercontent.com/oraios/serena/main/src/serena/resources/config/contexts/codex.yml
-[jetbrains-bundle]: https://github.com/ririnto/mcpserver-stdio-bundle

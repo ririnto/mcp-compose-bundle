@@ -1,115 +1,45 @@
 {
   "mcp": {
-    "awesome-copilot": {
-      "type": "remote",
-      "url": "http://localhost:48080/mcp",
-      "enabled": false
-    },
-    "chrome-devtools-mcp": {
-      "type": "local",
-      "command": [
-        "npx",
-        "-y",
-        "chrome-devtools-mcp"
-      ],
-      "enabled": false
-    },
-    "codex": {
-      "type": "local",
-      "command": [
-        "npx",
-        "-y",
-        "codex-mcp-server"
-      ],
-      "enabled": true
-    },
     "context7": {
-      "type": "remote",
-      "url": "http://localhost:48082/mcp",
+      "type": "local",
+      "command": [
+        "bunx",
+        "-y",
+        "@upstash/context7-mcp@latest"
+      ],
       "enabled": true
     },
     "fetch": {
       "type": "local",
       "command": [
+        "uvx",
         "mcp-server-fetch",
         "--ignore-robots-txt"
       ],
       "enabled": true
     },
-    "filesystem": {
-      "type": "local",
-      "command": [
-        "sh",
-        "-lc",
-        "npx -y @modelcontextprotocol/server-filesystem $HOME/Projects"
-      ],
-      "enabled": false
-    },
     "git": {
       "type": "local",
       "command": [
+        "uvx",
         "mcp-server-git"
       ],
       "enabled": true
     },
-    "jetbrains": {
-      "type": "local",
-      "command": [
-        "sh",
-        "-lc",
-        "java -jar $HOME/.config/github-copilot/intellij/mcpserver-stdio-253.29346.138-bundle.jar"
-      ],
-      "enabled": true,
-      "environment": {
-        "IJ_MCP_SERVER_PORT": "64342"
-      }
-    },
     "markitdown": {
-      "type": "remote",
-      "url": "http://localhost:48083/mcp",
-      "enabled": true
-    },
-    "memory": {
       "type": "local",
       "command": [
-        "npx",
-        "-y",
-        "@modelcontextprotocol/server-memory"
+        "uvx",
+        "markitdown-mcp"
       ],
       "enabled": true
     },
     "playwright": {
-      "type": "remote",
-      "url": "http://localhost:48084/mcp",
-      "enabled": false
-    },
-    "ripgrep": {
       "type": "local",
       "command": [
-        "npx",
+        "bunx",
         "-y",
-        "mcp-ripgrep"
-      ],
-      "enabled": true
-    },
-    "sequential-thinking": {
-      "type": "local",
-      "command": [
-        "npx",
-        "-y",
-        "@modelcontextprotocol/server-sequential-thinking"
-      ],
-      "enabled": true
-    },
-    "serena": {
-      "type": "local",
-      "command": [
-        "serena-mcp-server",
-        "--enable-web-dashboard",
-        "false",
-        "--context",
-        "codex",
-        "--project-from-cwd"
+        "@playwright/mcp@latest"
       ],
       "enabled": true
     },
